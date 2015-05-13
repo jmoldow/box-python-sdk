@@ -113,11 +113,15 @@ def test_url():
 
 @pytest.fixture(scope='session')
 def client_id():
+    # NOTE(jmoldow): In order for betamax to work, this (or an override in
+    # functional/conftest.py) needs to be a real client id.
     return 'fake_client_id'
 
 
 @pytest.fixture(scope='session')
 def client_secret():
+    # NOTE(jmoldow): In order for betamax to work, this (or an override in
+    # functional/conftest.py) needs to be a real client secret.
     return 'fake_client_secret'
 
 

@@ -12,6 +12,10 @@ class Network(object):
     Abstract base class specifying the interface of the network layer.
     """
 
+    @property
+    def session(self):
+        raise NotImplementedError   # pragma: no cover
+
     @abstractmethod
     def request(self, method, url, access_token, **kwargs):
         """

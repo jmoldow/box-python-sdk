@@ -76,6 +76,14 @@ class BoxSession(object):
         self._oauth = oauth
         self._network_layer = network_layer
 
+    @property
+    def session(self):
+        return self.network_layer.session
+
+    @property
+    def network_layer(self):
+        return self.network_layer
+
     def _renew_session(self, access_token_used):
         """
         Renews the session by refreshing the access token.

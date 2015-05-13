@@ -29,8 +29,20 @@ class Client(object):
         :type network_layer:
             :class:`Network`
         """
-        network_layer = network_layer or DefaultNetwork()
+        network_layer = network_layer or oauth.network_layer or DefaultNetwork()
         self._session = BoxSession(oauth=oauth, network_layer=network_layer)
+
+    @property
+    def box_session(self):
+        return self._session
+
+    @property
+    def requests_session(self):
+        return self.box_session.session
+
+    @property
+    def session(self):
+        return self.requests_session
 
     def folder(self, folder_id):
         """

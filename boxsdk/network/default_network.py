@@ -28,6 +28,10 @@ class DefaultNetwork(Network):
         time.sleep(delay)
         return request_method(*args, **kwargs)
 
+    @property
+    def session(self):
+        return self._session
+
 
 class DefaultNetworkResponse(NetworkResponse):
     """Implementation of the network interface using the requests library."""

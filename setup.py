@@ -28,6 +28,8 @@ CLASSIFIERS = [
     'Topic :: Software Development :: Libraries :: Python Modules',
 ]
 
+TESTS_REQUIRE = ['aplus', 'betamax', 'pytest', 'pytest-xdist', 'mock', 'sqlalchemy', 'bottle', 'jsonpatch']
+
 
 class PyTest(TestCommand):
     user_options = [(b'pytest-args=', b'a', b"Arguments to pass to py.test")]
@@ -65,7 +67,11 @@ def main():
         url='http://opensource.box.com',
         packages=find_packages(exclude=['demo', 'docs', 'test']),
         install_requires=install_requires,
-        tests_require=['pytest', 'pytest-xdist', 'mock', 'sqlalchemy', 'bottle', 'jsonpatch'],
+        tests_require=TESTS_REQUIRE,
+        extras_require={
+            'test': TESTS_REQUIRE,
+            'dev': TESTS_REQUIRE,
+        },
         cmdclass={'test': PyTest},
         classifiers=CLASSIFIERS,
         keywords='box oauth2 sdk',

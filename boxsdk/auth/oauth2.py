@@ -74,6 +74,14 @@ class OAuth2(object):
         self._box_device_name = box_device_name
 
     @property
+    def session(self):
+        return self.network_layer.session
+
+    @property
+    def network_layer(self):
+        return self._network_layer
+
+    @property
     def access_token(self):
         """
         Get the current access token.
@@ -85,7 +93,7 @@ class OAuth2(object):
         """
         return self._access_token
 
-    def get_authorization_url(self, redirect_url):
+    def get_authorization_url(self, redirect_url, box_login=None):
         """
         Get the authorization url based on the client id and the redirect url, passed in
 
@@ -111,6 +119,8 @@ class OAuth2(object):
         ]
         if redirect_url:
             params.append(('redirect_uri', redirect_url))
+        if box_login:
+            params.append(('box_login', box_login))
         # `urlencode()` doesn't work with non-ASCII unicode characters, so
         # encode the parameters as ASCII bytes.
         params = [(key.encode('utf-8'), value.encode('utf-8')) for (key, value) in params]

@@ -40,47 +40,47 @@ def _test_create_then_rename(item):
     assert item.get().name == updated_name
 
 
-def test_create_folder_then_move(box_client, created_subfolder):
+def test_create_folder_then_move(test_root_folder, created_subfolder):
     # pylint:disable=redefined-outer-name
-    _test_create_then_move(box_client, created_subfolder)
+    _test_create_then_move(test_root_folder, created_subfolder)
 
 
-def test_create_file_then_move(box_client, uploaded_file):
+def test_create_file_then_move(test_root_folder, uploaded_file):
     # pylint:disable=redefined-outer-name
-    _test_create_then_move(box_client, uploaded_file)
+    _test_create_then_move(test_root_folder, uploaded_file)
 
 
-def _test_create_then_move(box_client, item):
+def _test_create_then_move(test_root_folder, item):
     item_name = item.name
-    move_target = box_client.folder('0').create_subfolder('move target')
+    move_target = test_root_folder.create_subfolder('move target')
     item.move(move_target)
     item = item.get()
     assert item.name == item_name
     assert item.parent['id'] == move_target.object_id
-    assert len(box_client.folder('0').get_items(10)) == 1
+    assert len(test_root_folder.get_items(10)) == 1
     assert len(move_target.get_items(10)) == 1
 
 
-def test_create_folder_then_copy(box_client, created_subfolder):
+def test_create_folder_then_copy(test_root_folder, created_subfolder):
     # pylint:disable=redefined-outer-name
-    _test_create_then_copy(box_client, created_subfolder)
+    _test_create_then_copy(test_root_folder, created_subfolder)
 
 
-def test_create_file_then_copy(box_client, uploaded_file):
+def test_create_file_then_copy(test_root_folder, uploaded_file):
     # pylint:disable=redefined-outer-name
-    _test_create_then_copy(box_client, uploaded_file)
+    _test_create_then_copy(test_root_folder, uploaded_file)
 
 
-def _test_create_then_copy(box_client, item):
+def _test_create_then_copy(test_root_folder, item):
     # pylint:disable=redefined-outer-name
-    copy_target = box_client.folder('0').create_subfolder('copy target')
+    copy_target = test_root_folder.create_subfolder('copy target')
     copied_item = item.copy(copy_target)
     item = item.get()
     copied_item = copied_item.get()
     assert item.id != copied_item.id
     assert item.name == copied_item.name
     assert copied_item.parent['id'] == copy_target.object_id
-    assert len(box_client.folder('0').get_items(10)) == 2
+    assert len(test_root_folder.get_items(10)) == 2
     assert len(copy_target.get_items(10)) == 1
 
 
