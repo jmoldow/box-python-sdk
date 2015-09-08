@@ -51,7 +51,7 @@ class PyTest(TestCommand):
 
 def main():
     base_dir = dirname(__file__)
-    install_requires = ['requests>=2.4.3', 'six>=1.4.0']
+    install_requires = ['future', 'requests>=2.4.3', 'six>=1.4.0']
     jwt_requires = ['pyjwt>=1.3.0']
     if platform.python_implementation() == 'PyPy':
         jwt_requires.append('cryptography>=0.9.2, <1.0')

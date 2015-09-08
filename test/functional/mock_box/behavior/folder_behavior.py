@@ -1,6 +1,12 @@
 # coding: utf-8
 
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 from bottle import request, response
 from sqlalchemy.orm import make_transient
 from sqlalchemy.orm.exc import NoResultFound
@@ -25,7 +31,7 @@ class FolderBehavior(ItemBehavior):
     def update_folder_info(self, folder_id):
         folder = get_folder_by_id(self._db_session, folder_id)
         params = json.load(request.body)
-        for key, value in params.items():
+        for key, value in list(params.items()):
             if not hasattr(FolderModel, key):
                 abort(400, 'Folder has no attribute {0}.'.format(key))
             if key == 'parent':

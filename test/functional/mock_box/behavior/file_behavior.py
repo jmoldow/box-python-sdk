@@ -1,6 +1,12 @@
 # coding: utf-8
 
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 from bottle import response, request
 from hashlib import sha1
 from sqlalchemy.orm import make_transient
@@ -79,7 +85,7 @@ class FileBehavior(ItemBehavior):
         file_object = get_file_by_id(self._db_session, file_id)
         self._check_file_lock(file_object)
         params = json.load(request.body)
-        for key, value in params.items():
+        for key, value in list(params.items()):
             if not hasattr(FileModel, key):
                 abort(400, 'File has no attribute {0}.'.format(key))
             if key == 'parent':

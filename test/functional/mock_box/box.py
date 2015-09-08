@@ -1,6 +1,12 @@
 # coding: utf-8
 
 from __future__ import division, unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import object
 from bottle import Bottle, debug, request, response, view, TEMPLATE_PATH
 from datetime import datetime
 from os.path import dirname, join
@@ -75,7 +81,7 @@ class Box(object):
             app = app_mapping[app_port]
             app.route(routed_method.route, routed_method.verb, routed_method)
         for code in [400, 401, 404, 409, 429, 500]:
-            for app in app_mapping.values():
+            for app in list(app_mapping.values()):
                 app.error(code)(self.handle_error)
         self._api = StoppableWSGIRefServer(host='localhost', port=self.API_PORT).run(api)
         self._upload = StoppableWSGIRefServer(host='localhost', port=self.UPLOAD_PORT).run(upload)

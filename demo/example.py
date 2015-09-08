@@ -1,11 +1,17 @@
 # coding: utf-8
 
 from __future__ import print_function, unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import next
+from builtins import *
 import os
 from boxsdk import Client
 from boxsdk.exception import BoxAPIException
 from boxsdk.object.collaboration import CollaborationRole
-from auth import authenticate
+from .auth import authenticate
 
 
 def run_user_example(client):
