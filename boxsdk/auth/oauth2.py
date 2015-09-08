@@ -6,15 +6,12 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import range
-from builtins import *
-from builtins import object
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 
 from threading import Lock
 import random
 import string  # pylint:disable=deprecated-module
-
-from six.moves.urllib.parse import urlencode, urlunsplit  # pylint:disable=import-error,no-name-in-module
+from urllib.parse import urlencode, urlunsplit  # pylint:disable=import-error,no-name-in-module
 
 from boxsdk.network.default_network import DefaultNetwork
 from boxsdk.config import API

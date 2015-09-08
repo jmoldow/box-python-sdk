@@ -6,20 +6,12 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import zip
-from builtins import str
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
+
 import json
-
 from mock import Mock
-import pytest
-from six import text_type
 
-# pylint:disable=redefined-builtin
-# pylint:disable=import-error
-from six.moves import zip
-# pylint:enable=redefined-builtin
-# pylint:enable=import-error
+import pytest
 
 from boxsdk.auth.oauth2 import OAuth2
 from boxsdk.client import Client
@@ -95,8 +87,8 @@ def groups_response(group_id_1, group_id_2):
     # pylint:disable=redefined-outer-name
     mock_network_response = Mock(DefaultNetworkResponse)
     mock_network_response.json.return_value = {'entries': [
-        {'type': 'group', 'id': group_id_1, 'name': text_type(group_id_1)},
-        {'type': 'group', 'id': group_id_2, 'name': text_type(group_id_2)},
+        {'type': 'group', 'id': group_id_1, 'name': str(group_id_1)},
+        {'type': 'group', 'id': group_id_2, 'name': str(group_id_2)},
     ]}
     return mock_network_response
 

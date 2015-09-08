@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 import codecs
 import json
 from test.functional.mock_box.db_model.file_model import FileModel

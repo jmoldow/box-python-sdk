@@ -6,16 +6,13 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from six import PY2
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 
 
-class BoxException(Exception):
+class BoxException(Exception, object):
     """
     Base class exception for all errors raised from the SDK.
     """
-    def __str__(self):
-        return self.__unicode__().encode('utf-8') if PY2 else self.__unicode__()
 
 
 class BoxNetworkException(BoxException):
@@ -74,7 +71,7 @@ class BoxAPIException(BoxException):
         self._method = method
         self._context_info = context_info
 
-    def __unicode__(self):
+    def __str__(self):
         return '\nMessage: {0}\nStatus: {1}\nCode: {2}\nRequest id: {3}\nHeaders: {4}\nURL: {5}\nMethod: {6}\nContext info: {7}'.format(
             self._message,
             self._status,
@@ -168,7 +165,7 @@ class BoxOAuthException(BoxException):
         self._url = url
         self._method = method
 
-    def __unicode__(self):
+    def __str__(self):
         return '\nMessage: {0}\nStatus: {1}\nURL: {2}\nMethod: {3}'.format(
             self._message,
             self._status,

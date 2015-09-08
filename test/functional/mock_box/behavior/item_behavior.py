@@ -6,8 +6,7 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from builtins import object
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from bottle import request
 from test.functional.mock_box.util.db_utils import get_folder_by_id
 from test.functional.mock_box.util.http_utils import abort

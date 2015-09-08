@@ -6,9 +6,9 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 
-import six
+from future.utils import text_to_native_str as n
 
 
 __all__ = [
@@ -22,5 +22,4 @@ __all__ = [
     'user',
 ]
 
-if six.PY2:
-    __all__ = [str.encode(x, 'utf-8') for x in __all__]
+__all__ = list(map(n, __all__))

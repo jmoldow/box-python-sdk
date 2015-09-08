@@ -6,11 +6,11 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from abc import ABCMeta
 import json
 
-import six
+from future.utils import with_metaclass
 
 from boxsdk.object.base_endpoint import BaseEndpoint
 from boxsdk.util.translator import Translator
@@ -30,8 +30,7 @@ class ObjectMeta(ABCMeta):
             Translator().register(item_type, cls)
 
 
-@six.add_metaclass(ObjectMeta)
-class BaseObject(BaseEndpoint):
+class BaseObject(with_metaclass(ObjectMeta, BaseEndpoint)):
     """
     A Box API endpoint for interacting with a Box object.
     """

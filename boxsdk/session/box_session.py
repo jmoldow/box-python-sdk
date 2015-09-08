@@ -6,8 +6,7 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from builtins import object
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 
 from boxsdk.exception import BoxAPIException
 from boxsdk.util.shared_link import get_shared_link_header
@@ -270,7 +269,7 @@ class BoxSession(object):
         files = kwargs.get('files')
         file_stream_positions = None
         if files:
-            file_stream_positions = dict((name, file_tuple[1].tell()) for name, file_tuple in list(files.items()))
+            file_stream_positions = dict((name, file_tuple[1].tell()) for name, file_tuple in files.items())
         return self._make_request(
             method,
             url,
@@ -332,7 +331,7 @@ class BoxSession(object):
         # is a retried attempt.
         files, file_stream_positions = kwargs.get('files'), kwargs.pop('file_stream_positions')
         if files and file_stream_positions:
-            for name, position in list(file_stream_positions.items()):
+            for name, position in file_stream_positions.items():
                 files[name][1].seek(position)
 
         # send the request

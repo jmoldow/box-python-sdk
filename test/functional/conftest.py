@@ -6,13 +6,15 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from mock import mock_open, patch
 import pytest
 import re
 import requests
-import six
-from six.moves.urllib import parse  # pylint:disable=import-error, no-name-in-module
+from urllib import parse  # pylint:disable=import-error, no-name-in-module
+
+from future.utils import binary_type
+
 from boxsdk.auth.oauth2 import OAuth2
 from boxsdk.config import API
 from boxsdk.client import Client
@@ -46,7 +48,7 @@ def box_oauth(client_id, client_secret, user_login):
     # and if necessary decode it from a utf-8 encoded byte string to
     # a unicode string.
     auth_code = parsed_query_string_dict['code'][0]
-    if isinstance(auth_code, six.binary_type):
+    if isinstance(auth_code, binary_type):
         auth_code = auth_code.decode('utf-8')
 
     oauth2.authenticate(auth_code)

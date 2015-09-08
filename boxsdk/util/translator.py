@@ -6,14 +6,14 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from builtins import object
-from six import add_metaclass
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
+
+from future.utils import with_metaclass
+
 from boxsdk.util.singleton import Singleton
 
 
-@add_metaclass(Singleton)
-class Translator(object):
+class Translator(with_metaclass(Singleton, object)):
     """
     Translate item responses from the Box API to Box objects.
     """

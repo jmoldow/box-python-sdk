@@ -6,11 +6,12 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 import os
 from mock import Mock
+
 import pytest
-from six import int2byte, PY2
+
 from boxsdk.object.collaboration import Collaboration
 from boxsdk.object.file import File
 from boxsdk.object.folder import Folder
@@ -41,7 +42,7 @@ def mock_file_path():
 def mock_content_response(make_mock_box_request):
     mock_box_response, mock_network_response = make_mock_box_request(content=b'Contents of a text file.')
     mock_network_response.response_as_stream = raw = Mock()
-    raw.stream.return_value = (b if PY2 else int2byte(b) for b in mock_box_response.content)
+    raw.stream.return_value = [mock_box_response.content]
     return mock_box_response
 
 

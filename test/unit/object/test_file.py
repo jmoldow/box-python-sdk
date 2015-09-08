@@ -6,11 +6,14 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
+
+from io import BytesIO
 import json
 from mock import mock_open, patch
+
 import pytest
-from six import BytesIO
+
 from boxsdk.config import API
 from boxsdk.exception import BoxAPIException
 from boxsdk.object.file import File

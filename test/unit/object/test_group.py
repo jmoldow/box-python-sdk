@@ -6,15 +6,12 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import next
-from builtins import map
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from itertools import chain, islice, repeat, count
 import json
 from mock import Mock
 from operator import sub
 import pytest
-from six.moves import map  # pylint:disable=redefined-builtin,import-error
 
 from boxsdk.network.default_network import DefaultNetworkResponse
 from boxsdk.object.group_membership import GroupMembership
@@ -72,7 +69,7 @@ def mock_membership_dict_stream():
             'group': {'type': 'group', 'id': "group_id_{0}".format(some_id)},
         }
 
-    return list(map(gen_data, count()))
+    return map(gen_data, count())
 
 
 @pytest.fixture()
@@ -88,7 +85,7 @@ def mock_membership_responses(mock_membership_dict_stream):
             hidden_in_batch = repeat(0)
         quotient, remainder = divmod(total, page_size)
         max_items_in_batch = chain(repeat(page_size, quotient), (remainder,))
-        return list(map(sub, max_items_in_batch, hidden_in_batch))
+        return map(sub, max_items_in_batch, hidden_in_batch)
 
     def take(iterable, number):
         return list(islice(iterable, number))

@@ -6,11 +6,13 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from builtins import object
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
+
 from threading import Event, Thread
+
+from future.utils import with_metaclass
 import pytest
-from six import add_metaclass
+
 from boxsdk.util.singleton import Singleton
 
 # pylint:disable=redefined-outer-name
@@ -18,8 +20,7 @@ from boxsdk.util.singleton import Singleton
 
 @pytest.fixture
 def singleton_class():
-    @add_metaclass(Singleton)
-    class MySingleton(object):
+    class MySingleton(with_metaclass(Singleton, object)):
         def __init__(self, on_enter=None, block_on=None):
             if on_enter:
                 on_enter.set()
@@ -30,8 +31,7 @@ def singleton_class():
 
 @pytest.fixture
 def nested_singleton(singleton_class):
-    @add_metaclass(Singleton)
-    class Nested(object):
+    class Nested(with_metaclass(Singleton, object)):
         def __init__(self):
             self.single = singleton_class()
     return Nested

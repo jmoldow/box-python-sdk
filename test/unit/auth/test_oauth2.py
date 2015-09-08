@@ -6,15 +6,13 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import range
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from functools import partial
 from mock import Mock
 import pytest
 import re
 from threading import Thread
-
-from six.moves.urllib import parse as urlparse  # pylint:disable=import-error,no-name-in-module
+from urllib import parse as urlparse  # pylint:disable=import-error,no-name-in-module
 
 from boxsdk.exception import BoxOAuthException
 from boxsdk.network.default_network import DefaultNetworkResponse
@@ -82,7 +80,7 @@ def test_authenticate_send_post_request_with_correct_params(mock_network_layer, 
     assert oauth.access_token == successful_token_response.json()['access_token']
 
 
-@pytest.mark.parametrize('_', list(range(10)))
+@pytest.mark.parametrize('_', range(10))
 def test_refresh_send_post_request_with_correct_params_and_handles_multiple_requests(
         mock_network_layer,
         successful_token_response,
@@ -152,7 +150,7 @@ def test_authenticate_stores_tokens_correctly(mock_network_layer, successful_tok
     assert refresh_token == successful_token_response.json()['refresh_token']
 
 
-@pytest.mark.parametrize('_', list(range(10)))
+@pytest.mark.parametrize('_', range(10))
 def test_refresh_gives_back_the_correct_response_and_handles_multiple_requests(
         mock_network_layer,
         successful_token_response,

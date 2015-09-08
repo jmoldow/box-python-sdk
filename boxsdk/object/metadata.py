@@ -6,8 +6,7 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from builtins import object
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 import json
 from boxsdk.object.base_endpoint import BaseEndpoint
 

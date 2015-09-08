@@ -51,7 +51,7 @@ class PyTest(TestCommand):
 
 def main():
     base_dir = dirname(__file__)
-    install_requires = ['future', 'requests>=2.4.3', 'six>=1.4.0']
+    install_requires = ['future', 'requests>=2.4.3']
     jwt_requires = ['pyjwt>=1.3.0']
     if platform.python_implementation() == 'PyPy':
         jwt_requires.append('cryptography>=0.9.2, <1.0')
@@ -59,8 +59,6 @@ def main():
         jwt_requires.append('cryptography>=0.9.2')
     if version_info < (3, 4):
         install_requires.append('enum34>=1.0.4')
-    elif version_info < (2, 7):
-        install_requires.append('ordereddict>=1.1')
     setup(
         name='boxsdk',
         version='1.2.2',

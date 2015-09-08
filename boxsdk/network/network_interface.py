@@ -6,15 +6,14 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from builtins import object
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 
 from abc import ABCMeta, abstractmethod
-from six import add_metaclass
+
+from future.utils import with_metaclass
 
 
-@add_metaclass(ABCMeta)
-class Network(object):
+class Network(with_metaclass(ABCMeta, object)):
     """
     Abstract base class specifying the interface of the network layer.
     """
@@ -56,8 +55,7 @@ class Network(object):
         raise NotImplementedError  # pragma: no cover
 
 
-@add_metaclass(ABCMeta)
-class NetworkResponse(object):
+class NetworkResponse(with_metaclass(ABCMeta, object)):
     """Abstract base class specifying the interface for a network response."""
 
     @abstractmethod

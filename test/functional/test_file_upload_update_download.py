@@ -6,9 +6,10 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
+
+from io import BytesIO
 from mock import mock_open, patch
-import six
 
 
 def test_upload_then_update(box_client, test_file_path, test_file_content, update_file_content, file_name):
@@ -19,7 +20,7 @@ def test_upload_then_update(box_client, test_file_path, test_file_content, updat
     assert file_object_with_info.id == file_object.object_id
     assert file_object_with_info.name == file_name
     file_content = file_object.content()
-    expected_file_content = test_file_content.encode('utf-8') if isinstance(test_file_content, six.text_type)\
+    expected_file_content = test_file_content.encode('utf-8') if isinstance(test_file_content, str)\
         else test_file_content
     assert file_content == expected_file_content
     folder_items = box_client.folder('0').get_items(100)
@@ -43,8 +44,8 @@ def test_upload_then_update(box_client, test_file_path, test_file_content, updat
 def test_upload_then_download(box_client, test_file_path, test_file_content, file_name):
     with patch('boxsdk.object.folder.open', mock_open(read_data=test_file_content), create=True):
         file_object = box_client.folder('0').upload(test_file_path, file_name)
-    writeable_stream = six.BytesIO()
+    writeable_stream = BytesIO()
     file_object.download_to(writeable_stream)
-    expected_file_content = test_file_content.encode('utf-8') if isinstance(test_file_content, six.text_type)\
+    expected_file_content = test_file_content.encode('utf-8') if isinstance(test_file_content, str)\
         else test_file_content
     assert writeable_stream.getvalue() == expected_file_content

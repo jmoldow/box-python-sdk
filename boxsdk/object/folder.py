@@ -6,11 +6,10 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import *
-from builtins import object
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 import json
 import os
-from six import text_type
+
 from boxsdk.config import API
 from boxsdk.object.collaboration import Collaboration
 from boxsdk.object.file import File
@@ -45,7 +44,7 @@ class _Collaborator(object):
             self._setup(user=collaborator)
         elif isinstance(collaborator, Group):
             self._setup(group=collaborator)
-        elif isinstance(collaborator, text_type):
+        elif isinstance(collaborator, str):
             self._setup(email_address=collaborator)
         else:
             raise TypeError('Collaborator must be User, Group, or unicode string')

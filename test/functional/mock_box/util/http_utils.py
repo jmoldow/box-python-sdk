@@ -6,14 +6,14 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from builtins import str
-from builtins import *
+from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from bottle import HTTPError, ServerAdapter
 from functools import partial, wraps
+from future.utils import text_to_native_str as n
 from threading import Thread
 
 
-RETRY_AFTER_HEADER = str('Retry-After')
+RETRY_AFTER_HEADER = n('Retry-After')
 
 
 def abort(code, message=None, headers=None):

@@ -8,20 +8,15 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import *  # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 
-from enum import EnumMeta
+from enum import Enum as _Enum
 
-from future.utils import PY2, with_metaclass
-from future.types.newstr import BaseNewStr
-
-from .enum import Enum
+from future.utils import PY2, text_to_native_str as n
 
 
 if PY2:
-    class TextEnumMeta(BaseNewStr, EnumMeta):
+    class Enum(object, _Enum):
         pass
 else:
-    TextEnumMeta = EnumMeta
+    Enum = _Enum
 
-
-class TextEnum(with_metaclass(TextEnumMeta, str, Enum)):
-    pass
+__all__ = [n('Enum')]
