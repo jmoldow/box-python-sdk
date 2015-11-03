@@ -2,7 +2,8 @@
 
 from __future__ import unicode_literals
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
+
 from six import add_metaclass
 
 
@@ -62,7 +63,7 @@ class NetworkResponse(object):
         """
         raise NotImplementedError  # pragma: no cover
 
-    @abstractmethod
+    @abstractproperty
     def content(self):
         """Return the content of the response body.
 
@@ -71,7 +72,7 @@ class NetworkResponse(object):
         """
         raise NotImplementedError  # pragma: no cover
 
-    @abstractmethod
+    @abstractproperty
     def status_code(self):
         """Return the HTTP status code of the response.
 
@@ -80,7 +81,7 @@ class NetworkResponse(object):
         """
         raise NotImplementedError  # pragma: no cover
 
-    @abstractmethod
+    @abstractproperty
     def ok(self):
         """Return whether or not the request was successful.
 
@@ -90,7 +91,7 @@ class NetworkResponse(object):
         # pylint:disable=invalid-name
         raise NotImplementedError  # pragma: no cover
 
-    @abstractmethod
+    @abstractproperty
     def headers(self):
         """Return the response headers.
 
@@ -99,7 +100,7 @@ class NetworkResponse(object):
         """
         raise NotImplementedError  # pragma: no cover
 
-    @abstractmethod
+    @abstractproperty
     def response_as_stream(self):
         """Return a stream containing the raw network response.
 
@@ -108,7 +109,7 @@ class NetworkResponse(object):
         """
         raise NotImplementedError  # pragma: no cover
 
-    @abstractmethod
+    @abstractproperty
     def access_token_used(self):
         """Return the access token used to make the request.
 
@@ -116,3 +117,15 @@ class NetworkResponse(object):
             `unicode`
         """
         raise NotImplementedError  # pragma: no cover
+
+    def close(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
+
+    def __del__(self):
+        self.close()

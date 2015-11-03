@@ -57,6 +57,18 @@ class BoxResponse(object):
         """
         return self._network_response
 
+    def close(self):
+        return self._network_response.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
+
+    def __del__(self):
+        self.close()
+
 
 class BoxSession(object):
     """

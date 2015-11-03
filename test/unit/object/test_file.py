@@ -55,7 +55,7 @@ def test_get_content(test_file, mock_box_session, mock_content_response):
     mock_box_session.get.return_value = mock_content_response
     file_content = test_file.content()
     assert file_content == mock_content_response.content
-    mock_box_session.get.assert_called_once_with(expected_url, expect_json_response=False)
+    mock_box_session.get.assert_called_once_with(expected_url, expect_json_response=False, stream=False)
 
 
 @pytest.mark.parametrize('is_stream', (True, False))

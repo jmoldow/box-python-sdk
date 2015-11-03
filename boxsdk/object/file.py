@@ -2,9 +2,15 @@
 
 from __future__ import unicode_literals
 
+from contextlib import contextmanager, closing
+
 from boxsdk.config import API
 from .item import Item
 from .metadata import Metadata
+
+
+_BYTES_PER_KiB = 2**10
+_BYTES_PER_64_KiB = (2**6) * _BYTES_PER_KiB   # Constant from urllib3.response.HTTPResponse.stream.
 
 
 class File(Item):
@@ -44,6 +50,12 @@ class File(Item):
         """
         return self._get_accelerator_upload_url(file_id=self._object_id)
 
+    @contextmanager
+    def _content_response(self, stream=False):
+        url = self.get_url('content')
+        with closing(self._session.get(url, expect_json_response=False, stream=stream)) as box_response:
+            yield box_response
+
     def content(self):
         """
         Get the content of a file on Box.
@@ -53,9 +65,13 @@ class File(Item):
         :rtype:
             `bytes`
         """
-        url = self.get_url('content')
-        box_response = self._session.get(url, expect_json_response=False)
-        return box_response.content
+        with self._content_response(stream=False) as box_response:
+            return box_response.content
+
+    @contextmanager
+    def content_stream(self, stream_amount=_BYTES_PER_64_KiB):
+        with self._content_response(stream=True) as box_response:
+            yield box_response.network_response.response_as_stream.stream(amt=stream_amount, decode_content=True)
 
     def download_to(self, writeable_stream):
         """
@@ -66,10 +82,9 @@ class File(Item):
         :type writeable_stream:
             `file`
         """
-        url = self.get_url('content')
-        box_response = self._session.get(url, expect_json_response=False, stream=True)
-        for chunk in box_response.network_response.response_as_stream.stream(decode_content=True):
-            writeable_stream.write(chunk)
+        with self.content_stream() as content_stream:
+            for chunk in content_stream:
+                writeable_stream.write(chunk)
 
     def update_contents_with_stream(
             self,
