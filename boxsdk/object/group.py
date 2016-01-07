@@ -5,7 +5,6 @@ from functools import partial
 import json
 
 from .base_object import BaseObject
-from boxsdk.config import API
 from boxsdk.object.group_membership import GroupMembership
 
 
@@ -71,7 +70,7 @@ class Group(BaseObject):
         :rtype:
             :class:`GroupMembership`
         """
-        url = '{0}/group_memberships'.format(API.BASE_API_URL)
+        url = '{0}/group_memberships'.format(self._session.API.BASE_API_URL)
         body_attributes = {
             'user': {'id': user.object_id},
             'group': {'id': self.object_id},

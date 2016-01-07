@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import json
 import os
 from six import text_type
-from boxsdk.config import API
 from boxsdk.object.collaboration import Collaboration
 from boxsdk.object.file import File
 from boxsdk.object.group import Group
@@ -200,7 +199,7 @@ class Folder(Item):
         if preflight_check:
             self.preflight_check(size=preflight_expected_size, name=file_name)
 
-        url = '{0}/files/content'.format(API.UPLOAD_URL)
+        url = '{0}/files/content'.format(self._session.API.UPLOAD_URL)
         if upload_using_accelerator:
             accelerator_upload_url = self._get_accelerator_upload_url_fow_new_uploads()
             if accelerator_upload_url:
@@ -342,7 +341,7 @@ class Folder(Item):
             :class:`Collaboration`
         """
         collaborator_helper = _Collaborator(collaborator)
-        url = API.BASE_API_URL + '/collaborations'
+        url = self._session.API.BASE_API_URL + '/collaborations'
         item = {'id': self._object_id, 'type': 'folder'}
         access_key, access_value = collaborator_helper.access
         accessible_by = {

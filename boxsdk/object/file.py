@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-from boxsdk.config import API
 from .item import Item
 from .metadata import Metadata
 
@@ -119,7 +118,7 @@ class File(Item):
         if preflight_check:
             self.preflight_check(size=preflight_expected_size)
 
-        url = self.get_url('content').replace(API.BASE_API_URL, API.UPLOAD_URL)
+        url = self.get_url('content').replace(self._session.API.BASE_API_URL, self._session.API.UPLOAD_URL)
         if upload_using_accelerator:
             accelerator_upload_url = self._get_accelerator_upload_url_for_update()
             if accelerator_upload_url:

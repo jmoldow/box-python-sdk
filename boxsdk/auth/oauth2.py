@@ -9,7 +9,6 @@ import string  # pylint:disable=deprecated-module
 from six.moves.urllib.parse import urlencode, urlunsplit  # pylint:disable=import-error,no-name-in-module
 
 from boxsdk.network.default_network import DefaultNetwork
-from boxsdk.config import API
 from boxsdk.exception import BoxOAuthException
 
 
@@ -120,7 +119,7 @@ class OAuth2(object):
         # encode the parameters as ASCII bytes.
         params = [(key.encode('utf-8'), value.encode('utf-8')) for (key, value) in params]
         query_string = urlencode(params)
-        return urlunsplit(('', '', API.OAUTH2_AUTHORIZE_URL, query_string, '')), csrf_token
+        return urlunsplit(('', '', self._network_layer.API.OAUTH2_AUTHORIZE_URL, query_string, '')), csrf_token
 
     def authenticate(self, auth_code):
         """
@@ -233,7 +232,7 @@ class OAuth2(object):
         :rtype:
             (`unicode`, `unicode`)
         """
-        url = '{base_auth_url}/token'.format(base_auth_url=API.OAUTH2_API_URL)
+        url = '{base_auth_url}/token'.format(base_auth_url=self._network_layer.API.OAUTH2_API_URL)
         headers = {'content-type': 'application/x-www-form-urlencoded'}
         network_response = self._network_layer.request(
             'POST',

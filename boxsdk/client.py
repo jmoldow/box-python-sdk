@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import json
 
 from .auth import DeveloperTokenAuth
-from .config import API
 from .session.box_session import BoxSession
 from .network.default_network import DefaultNetwork
 from .object.user import User
@@ -121,7 +120,7 @@ class Client(object):
         :rtype:
             `list` of :class:`User`
         """
-        url = '{0}/users'.format(API.BASE_API_URL)
+        url = '{0}/users'.format(self._network.API.BASE_API_URL)
         params = dict(offset=offset)
         if limit is not None:
             params['limit'] = limit
@@ -223,7 +222,7 @@ class Client(object):
         :rtype:
             `list` of :class:`Group`
         """
-        url = '{0}/groups'.format(API.BASE_API_URL)
+        url = '{0}/groups'.format(self._network.API.BASE_API_URL)
         box_response = self._session.get(url)
         response = box_response.json()
         return [Group(self._session, item['id'], item) for item in response['entries']]
@@ -243,7 +242,7 @@ class Client(object):
         :raises:
             :class:`BoxAPIException` if current user doesn't have permissions to create a group.
         """
-        url = '{0}/groups'.format(API.BASE_API_URL)
+        url = '{0}/groups'.format(self._network.API.BASE_API_URL)
         body_attributes = {
             'name': name,
         }
@@ -272,7 +271,7 @@ class Client(object):
         """
         response = self.make_request(
             'GET',
-            '{0}/shared_items'.format(API.BASE_API_URL),
+            '{0}/shared_items'.format(self._network.API.BASE_API_URL),
             headers=get_shared_link_header(shared_link, password),
         ).json()
         return Translator().translate(response['type'])(
@@ -320,7 +319,7 @@ class Client(object):
             https://box-content.readme.io/#create-an-enterprise-user for enterprise users
             or https://developers.box.com/developer-edition/ for app users.
         """
-        url = '{0}/users'.format(API.BASE_API_URL)
+        url = '{0}/users'.format(self._network.API.BASE_API_URL)
         user_attributes['name'] = name
         if login is not None:
             user_attributes['login'] = login

@@ -113,6 +113,10 @@ class BoxSession(object):
         headers.update(get_shared_link_header(shared_link, shared_link_password))
         return self.__class__(self._oauth, self._network_layer, headers)
 
+    @property
+    def API(self):
+        return self._network_layer.API
+
     def _renew_session(self, access_token_used):
         """
         Renews the session by refreshing the access token.

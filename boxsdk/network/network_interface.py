@@ -5,12 +5,18 @@ from __future__ import unicode_literals
 from abc import ABCMeta, abstractmethod
 from six import add_metaclass
 
+from boxsdk.config import API
+
 
 @add_metaclass(ABCMeta)
 class Network(object):
     """
     Abstract base class specifying the interface of the network layer.
     """
+
+    # Network subclasses may instead construct this class dynamically in __init__, and
+    # expose it via an `API` property.
+    API = API
 
     @abstractmethod
     def request(self, method, url, access_token, **kwargs):

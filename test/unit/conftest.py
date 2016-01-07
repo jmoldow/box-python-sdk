@@ -12,12 +12,15 @@ from boxsdk.session.box_session import BoxResponse, BoxSession
 
 @pytest.fixture()
 def mock_box_session():
-    return Mock(BoxSession)
+    mock_box_session = Mock(BoxSession)
+    mock_box_session.API = DefaultNetwork.API
+    return mock_box_session
 
 
 @pytest.fixture(scope='function')
 def mock_network_layer():
     mock_network = Mock(DefaultNetwork)
+    mock_network.API = DefaultNetwork.API
     return mock_network
 
 

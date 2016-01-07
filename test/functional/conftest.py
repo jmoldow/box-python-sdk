@@ -11,22 +11,40 @@ import six
 from six.moves.urllib import parse  # pylint:disable=import-error, no-name-in-module
 
 from boxsdk.auth.oauth2 import OAuth2
-from boxsdk.config import API
 from boxsdk.client import Client
+from boxsdk.network.custom_api_urls_network import CustomAPIURLsDefaultNetwork
 from test.functional.mock_box.box import Box
 from test.util.streamable_mock_open import streamable_mock_open
 
 
 @pytest.fixture()
-def box_client(box_oauth):
+def PatchedDefaultNetwork():
+
     # pylint:disable=redefined-outer-name
-    return Client(box_oauth)
+    class PatchedDefaultNetwork(CustomAPIURLsDefaultNetwork):
+        API_URLS = {
+            'BASE_API_URL': 'http://localhost:{0}'.format(Box.API_PORT),
+            'UPLOAD_URL': 'http://localhost:{0}'.format(Box.UPLOAD_PORT),
+            'OAUTH2_API_URL': 'http://localhost:{0}'.format(Box.OAUTH_API_PORT),
+            'OAUTH2_AUTHORIZE_URL': 'http://localhost:{0}'.format(Box.OAUTH_AUTHORIZE_PORT),
+        }
+
+        def __init__(self):
+            super(PatchedDefaultNetwork, self).__init__(api_urls=self.API_URLS)
+
+    return PatchedDefaultNetwork
 
 
 @pytest.fixture()
-def box_oauth(client_id, client_secret, user_login):
+def box_client(box_oauth, network_layer):
     # pylint:disable=redefined-outer-name
-    oauth2 = OAuth2(client_id, client_secret, box_device_name='mock_box functional test')
+    return Client(box_oauth, network_layer=network_layer)
+
+
+@pytest.fixture()
+def box_oauth(client_id, client_secret, user_login, network_layer):
+    # pylint:disable=redefined-outer-name
+    oauth2 = OAuth2(client_id, client_secret, box_device_name='mock_box functional test', network_layer=network_layer)
     url, _ = oauth2.get_authorization_url('http://localhost')
     form = requests.get(url + '&box_login=' + user_login).content.decode('utf-8')
     form_action = re.search('action="([^"]*)"', form).group(1)
@@ -51,6 +69,11 @@ def box_oauth(client_id, client_secret, user_login):
     return oauth2
 
 
+@pytest.fixture()
+def network_layer(PatchedDefaultNetwork):
+    return PatchedDefaultNetwork()
+
+
 @pytest.fixture(scope='session')
 def mock_box_server(request):
     box = Box()
@@ -62,10 +85,6 @@ def mock_box_server(request):
 def mock_box(mock_box_server, monkeypatch, client_id, client_secret, user_name, user_login):
     # pylint:disable=redefined-outer-name
     mock_box_server.reset_filesystem([(user_name, user_login)], [(client_id, client_secret, 0)])
-    monkeypatch.setattr(API, 'BASE_API_URL', 'http://localhost:{0}'.format(Box.API_PORT))
-    monkeypatch.setattr(API, 'UPLOAD_URL', 'http://localhost:{0}'.format(Box.UPLOAD_PORT))
-    monkeypatch.setattr(API, 'OAUTH2_API_URL', 'http://localhost:{0}'.format(Box.OAUTH_API_PORT))
-    monkeypatch.setattr(API, 'OAUTH2_AUTHORIZE_URL', 'http://localhost:{0}'.format(Box.OAUTH_AUTHORIZE_PORT))
     return mock_box_server
 
 
