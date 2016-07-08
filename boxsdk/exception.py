@@ -1,7 +1,14 @@
 # coding: utf-8
 
-from __future__ import unicode_literals
-from six import PY2
+from __future__ import absolute_import, unicode_literals
+
+from itertools import starmap
+import pprint
+
+from six import iteritems, PY2
+from six.moves import filter, map
+
+from boxsdk.util.ordered_dict import OrderedDict
 
 
 class BoxException(Exception):
@@ -12,6 +19,29 @@ class BoxException(Exception):
         # pylint:disable=no-member
         # <https://github.com/box/box-python-sdk/issues/117>
         return self.__unicode__().encode('utf-8') if PY2 else self.__unicode__()
+
+    def __unicode__(self):
+        return super(BoxException, self).__str__().decode('utf-8') if PY2 else super().__str__()
+
+    def __repr__(self):
+        rep = self._text_repr()
+        return rep.encode('utf-8') if PY2 else rep
+
+    def _text_repr(self):
+        def kwarg_repr(name, value):
+            return '{name}={value}'.format(name=name, value=repr(value)) if value is not None else ''
+
+        optional_args = ', '.join(filter(bool, starmap(kwarg_repr, iteritems(self.kwargs))))
+        required_args = ', '.join(map(repr, self.args))
+        args = ', '.join(filter(bool, (required_args, optional_args)))
+        class_name = self.__class__.__name__
+        return '{class_name}({args})'.format(**locals())
+
+    @property
+    def kwargs(self):
+        kwargs = getattr(self, '_kwargs', {})
+        kwargs = filter(lambda item: item[0] not in ['__class__', 'self'], iteritems(kwargs))
+        return OrderedDict(sorted(kwargs))
 
 
 class BoxNetworkException(BoxException):
@@ -61,6 +91,9 @@ class BoxAPIException(BoxException):
             `dict`
         """
         super(BoxAPIException, self).__init__()
+        self._kwargs = dict(locals())
+        del self._kwargs['status']
+        self._args = (status,)
         self._status = status
         self._code = code
         self._message = message
@@ -76,11 +109,15 @@ class BoxAPIException(BoxException):
             self._status,
             self._code,
             self._request_id,
-            self._headers,
+            pprint.pformat(self._headers),
             self._url,
             self._method,
-            self._context_info,
+            pprint.pformat(self._context_info),
         )
+
+    @property
+    def args(self):
+        return getattr(self, '_args', ())
 
     @property
     def status(self):
@@ -159,6 +196,9 @@ class BoxOAuthException(BoxException):
             `unicode`
         """
         super(BoxOAuthException, self).__init__()
+        self._kwargs = dict(locals())
+        del self._kwargs['status']
+        self._args = (status,)
         self._status = status
         self._message = message
         self._url = url
@@ -171,3 +211,7 @@ class BoxOAuthException(BoxException):
             self._url,
             self._method,
         )
+
+    @property
+    def args(self):
+        return getattr(self, '_args', ())

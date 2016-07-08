@@ -7,6 +7,7 @@ pylint
 pytest>=2.8.3
 pytest-cov
 pytest-xdist
+rotunicode>=2.2.1  # Needs to be released.
 sphinx
 sqlalchemy
 tox

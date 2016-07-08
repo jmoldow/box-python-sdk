@@ -94,7 +94,7 @@ def main():
         packages=find_packages(exclude=['demo', 'docs', 'test', 'test*', '*test', '*test*']),
         install_requires=install_requires,
         extras_require=extra_requires,
-        tests_require=['pytest', 'pytest-xdist', 'mock', 'sqlalchemy', 'bottle', 'jsonpatch'],
+        tests_require=['pytest', 'pytest-xdist', 'mock', 'sqlalchemy', 'bottle', 'jsonpatch', 'rotunicode>=2.2.1'],
         cmdclass={'test': PyTest},
         classifiers=CLASSIFIERS,
         keywords='box oauth2 sdk',
