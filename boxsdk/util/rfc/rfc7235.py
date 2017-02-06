@@ -23,6 +23,7 @@ from .rfc7230 import BAD_WHITESPACE_PATTERN, TOKEN_PATTERN, DOUBLE_QUOTED_STRING
 __all__ = list(map(str, ['AUTH_SCHEME_PATTERN', 'AUTH_PARAM_START_PATTERN', 'TOKEN68_PATTERN', 'AUTH_CHALLENGE_START_PATTERN']))
 
 
+# 1*SP
 _PATTERN_OF_ONE_OR_MORE_SPACE_CHARACTERS = re.compile(r"[ ]+")
 
 
@@ -34,6 +35,8 @@ _PATTERN_OF_ONE_OR_MORE_SPACE_CHARACTERS = re.compile(r"[ ]+")
 AUTH_SCHEME_PATTERN = TOKEN_PATTERN
 
 _AUTH_PARAM_NAME_PATTERN = TOKEN_PATTERN
+
+# ( token / quoted-string ) start pattern
 _AUTH_PARAM_VALUE_START_PATTERN = re.compile(r"(?:{TOKEN_PATTERN.pattern})|{DOUBLE_QUOTED_STRING_START_CHARACTER}".format(**locals()))
 
 # auth-param start pattern
@@ -49,6 +52,7 @@ AUTH_PARAM_START_PATTERN = re.compile(
 # token68
 TOKEN68_PATTERN = re.compile(r"[a-zA-Z0-9\-._~+/]+[=]*")
 
+# [ 1*SP ( token68 / #auth-param ) ] start pattern
 _AUTH_SCHEME_ADDITIONAL_INFORMATION_START_PATTERN = re.compile(
     r"(?:{TOKEN68_PATTERN.pattern})|(?:{AUTH_PARAM_START_PATTERN.pattern})".format(**locals())
 )
