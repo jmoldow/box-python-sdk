@@ -12,18 +12,18 @@ from boxsdk.util.rfc import rfc7230
 
 REPattern = re.compile(r"").__class__
 
-TOKEN_CHARACTERS = list(b"! # $ % & ' * + - . ^ _ ` | ~ 0 9 a z A Z".split(b" "))
-NOT_TOKEN_CHARACTERS = list(rb'" ( ) , / : ; < = > ? @ [ \ ] { }'.split(b" "))
+TOKEN_CHARACTERS = list("! # $ % & ' * + - . ^ _ ` | ~ 0 9 a z A Z".split(" "))
+NOT_TOKEN_CHARACTERS = list(r'" ( ) , / : ; < = > ? @ [ \ ] { }'.split(" "))
 
 
 @pytest.fixture(params=list(range(4)))
 def spaces(request):
-    return (b" " * request.param)
+    return (" " * request.param)
 
 
 @pytest.fixture(params=list(range(4)))
 def horizontal_tabs(request):
-    return (b"\t" * request.param)
+    return ("\t" * request.param)
 
 
 @pytest.fixture
@@ -58,10 +58,11 @@ def token(token_character, start_position, length):
 
 def test_OPTIONAL_WHITESPACE_PATTERN():
     assert isinstance(rfc7230.OPTIONAL_WHITESPACE_PATTERN, REPattern)
+    assert isinstance(rfc7230.OPTIONAL_WHITESPACE_PATTERN.pattern, six.text_type)
 
 
 def test_OPTIONAL_WHITESPACE_PATTERN_positive_match(whitespace):
-    match = rfc7230.OPTIONAL_WHITESPACE_PATTERN.match(whitespace + b"/")
+    match = rfc7230.OPTIONAL_WHITESPACE_PATTERN.match(whitespace + "/")
     assert match
     assert match.group() == whitespace
 
@@ -72,6 +73,7 @@ def test_BAD_WHITESPACE_PATTERN():
 
 def test_TOKEN_CHARACTER_PATTERN():
     assert isinstance(rfc7230.TOKEN_CHARACTER_PATTERN, REPattern)
+    assert isinstance(rfc7230.TOKEN_CHARACTER_PATTERN.pattern, six.text_type)
 
 
 def test_TOKEN_CHARACTER_PATTERN_positive_match(token_character):
@@ -87,7 +89,7 @@ def test_TOKEN_CHARACTER_PATTERN_only_matches_one_character(token_character):
 
 
 def test_TOKEN_CHARACTER_PATTERN_does_not_match_empty_string():
-    assert not rfc7230.TOKEN_CHARACTER_PATTERN.search(b"")
+    assert not rfc7230.TOKEN_CHARACTER_PATTERN.search("")
 
 
 def test_TOKEN_CHARACTER_PATTERN_no_match(not_token_character):
@@ -96,6 +98,7 @@ def test_TOKEN_CHARACTER_PATTERN_no_match(not_token_character):
 
 def test_TOKEN_PATTERN():
     assert isinstance(rfc7230.TOKEN_PATTERN, REPattern)
+    assert isinstance(rfc7230.TOKEN_PATTERN.pattern, six.text_type)
 
 
 def test_TOKEN_PATTERN_positive_match(token):
@@ -105,7 +108,7 @@ def test_TOKEN_PATTERN_positive_match(token):
 
 
 def test_TOKEN_PATTERN_does_not_match_empty_string():
-    assert not rfc7230.TOKEN_PATTERN.search(b"")
+    assert not rfc7230.TOKEN_PATTERN.search("")
 
 
 def test_TOKEN_PATTERN_no_match(not_token_character):
@@ -113,5 +116,5 @@ def test_TOKEN_PATTERN_no_match(not_token_character):
 
 
 def test_DOUBLE_QUOTED_STRING_START_CHARACTER():
-    assert isinstance(rfc7230.DOUBLE_QUOTED_STRING_START_CHARACTER, six.binary_type)
-    assert rfc7230.DOUBLE_QUOTED_STRING_START_CHARACTER == b'"'
+    assert isinstance(rfc7230.DOUBLE_QUOTED_STRING_START_CHARACTER, six.text_type)
+    assert rfc7230.DOUBLE_QUOTED_STRING_START_CHARACTER == '"'

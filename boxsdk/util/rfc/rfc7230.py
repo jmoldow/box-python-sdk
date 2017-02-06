@@ -26,10 +26,10 @@ __all__ = list(map(str, [
 
 
 # DQUOTE
-_DOUBLE_QUOTE_CHARACTER = b'"'
+_DOUBLE_QUOTE_CHARACTER = '"'
 
 # SP / HTAB
-_SPACE_OR_HORIZONTAL_TAB_CHARACTER_PATTERN = re.compile(rb"[ \t]")
+_SPACE_OR_HORIZONTAL_TAB_CHARACTER_PATTERN = re.compile(r"[ \t]")
 
 
 ###########################################################
@@ -37,7 +37,7 @@ _SPACE_OR_HORIZONTAL_TAB_CHARACTER_PATTERN = re.compile(rb"[ \t]")
 ###########################################################
 
 # OWS
-OPTIONAL_WHITESPACE_PATTERN = re.compile(_SPACE_OR_HORIZONTAL_TAB_CHARACTER_PATTERN.pattern + rb"*")
+OPTIONAL_WHITESPACE_PATTERN = re.compile(r"{_SPACE_OR_HORIZONTAL_TAB_CHARACTER_PATTERN.pattern}*".format(**locals()))
 
 # BWS
 BAD_WHITESPACE_PATTERN = OPTIONAL_WHITESPACE_PATTERN
@@ -48,10 +48,10 @@ BAD_WHITESPACE_PATTERN = OPTIONAL_WHITESPACE_PATTERN
 ###########################################################
 
 # tchar
-TOKEN_CHARACTER_PATTERN = re.compile(rb"[!#$%&'*+\-.^_`|~0-9a-zA-Z]")
+TOKEN_CHARACTER_PATTERN = re.compile(r"[!#$%&'*+\-.^_`|~0-9a-zA-Z]")
 
 # token
-TOKEN_PATTERN = re.compile(TOKEN_CHARACTER_PATTERN.pattern + rb"+")
+TOKEN_PATTERN = re.compile(r"{TOKEN_CHARACTER_PATTERN.pattern}+".format(**locals()))
 
 # quoted-string start character
 DOUBLE_QUOTED_STRING_START_CHARACTER = _DOUBLE_QUOTE_CHARACTER
