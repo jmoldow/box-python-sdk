@@ -4,6 +4,8 @@ from __future__ import unicode_literals, absolute_import
 
 from functools import update_wrapper, wraps
 
+from ..object.cloneable import Cloneable
+
 
 def api_call(method):
     """
@@ -35,17 +37,24 @@ class APICallWrapper(object):
         self._func_that_makes_an_api_call = func_that_makes_an_api_call
         update_wrapper(self, func_that_makes_an_api_call)
 
+    def __call__(self, cloneable_instance, *args, **kwargs):
+        if not isinstance(cloneable_instance, Cloneable):
+            raise TypeError(
+                "descriptor {name!r} requires a 'Cloneable' object but received a {cloneable_instance.__class__.__name__!r}",
+                name=self.__name__,
+                cloneable_instance=cloneable_instance,
+            )
+        method = api_call_wrapper._func_that_makes_an_api_call.__get__(cloneable_instance, type(cloneable_instance))
+        return method(*args, **kwargs)
+
     def __get__(self, _instance, owner):
+        if _instance is None:
+            return self
+        if not (isinstance(owner, type) and issubclass(owner, Cloneable) and isinstance(_instance, owner)):
+            raise TypeError
+
         @wraps(self._func_that_makes_an_api_call)
-        def call(*args, **kwargs):
-            instance = _instance
-            if instance is None:
-                # If this is being called as an unbound method, the instance is the first arg.
-                if owner is not None and len(args) > 0 and isinstance(args[0], owner):
-                    instance = args[0]
-                    args = args[1:]
-                else:
-                    raise TypeError
+        def call(instance, *args, **kwargs):
             extra_network_parameters = kwargs.pop('extra_network_parameters', None)
             if extra_network_parameters:
                 # If extra_network_parameters is specified, then clone the instance, and specify the parameters
@@ -53,6 +62,6 @@ class APICallWrapper(object):
                 # pylint: disable=protected-access
                 instance = instance.clone(instance._session.with_default_network_request_kwargs(extra_network_parameters))
                 # pylint: enable=protected-access
-            response = self._func_that_makes_an_api_call(instance, *args, **kwargs)
-            return response
-        return call
+            return self(instance, *args, **kwargs)
+
+        return call.__get__(_instance, owner)

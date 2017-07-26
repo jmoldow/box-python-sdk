@@ -7,6 +7,7 @@ from pprint import pformat
 import sys
 
 from six import text_type
+from six.moves import http_client
 
 from boxsdk.network.default_network import DefaultNetwork, DefaultNetworkResponse
 from boxsdk.util.log import setup_logging
@@ -19,9 +20,13 @@ class LoggingNetwork(DefaultNetwork):
     LOGGER_NAME = 'boxsdk.network'
     REQUEST_FORMAT = '\x1b[36m%(method)s %(url)s %(request_kwargs)s\x1b[0m'
     EXCEPTION_FORMAT = '\x1b[31mRequest "%(method)s %(url)s" failed with %(exc_type_name)s exception: %(exc_value)r\x1b[0m'
-    _COMMON_RESPONSE_FORMAT = '"%(method)s %(url)s" %(status_code)s %(content_length)s\n%(headers)s\n%(content)s\n'
-    SUCCESSFUL_RESPONSE_FORMAT = '\x1b[32m{0}\x1b[0m'.format(_COMMON_RESPONSE_FORMAT)
-    ERROR_RESPONSE_FORMAT = '\x1b[31m{0}\x1b[0m'.format(_COMMON_RESPONSE_FORMAT)
+    _COMMON_RESPONSE_FORMAT = (
+        '{ansi_formatting}"%(method)s %(url)s" %(status_code)s %(content_length)s\x1b[0m\n'
+        '{ansi_formatting}%(headers)s\x1b[0m\n'
+        '{ansi_formatting}%(content)s\x1b[0m\n'
+    )
+    SUCCESSFUL_RESPONSE_FORMAT = _COMMON_RESPONSE_FORMAT.format(ansi_formatting='\x1b[32m')
+    ERROR_RESPONSE_FORMAT = _COMMON_RESPONSE_FORMAT.format(ansi_formatting='\x1b[31m')
 
     def __init__(self, logger=None):
         """
@@ -157,6 +162,7 @@ class LoggingNetworkResponse(DefaultNetworkResponse):
     """
 
     STREAM_CONTENT_NOT_LOGGED = '<File download contents unavailable for logging>'
+    HTTP_STATUS_CODES_WITH_NO_CONTENT = frozenset([http_client.NO_CONTENT, http_client.RESET_CONTENT, http_client.NOT_MODIFIED])
 
     def __init__(self, logger, successful_response_format, error_response_format, **kwargs):
         """Extends baseclass method.
@@ -188,6 +194,9 @@ class LoggingNetworkResponse(DefaultNetworkResponse):
         self._successful_response_format = successful_response_format
         self._error_response_format = error_response_format
         self._did_log = False
+
+        if (not self.ok) or (self.status_code in self.HTTP_STATUS_CODES_WITH_NO_CONTENT) or (100 <= self.status_code < 200) or (self._request_response.request.method == 'HEAD') or (int(self.headers.get('Content-Length', '1')) == 0):
+            self.log(can_safely_log_content=True)
 
     def log(self, can_safely_log_content=False):
         """Logs information about the Box API response.

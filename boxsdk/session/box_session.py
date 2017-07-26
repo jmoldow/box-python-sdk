@@ -229,19 +229,14 @@ class BoxSession(object):
             `int`
         """
         if network_response.status_code == 401 and kwargs['auto_session_renewal']:
+            network_response.content
             self._renew_session(network_response.access_token_used)
             kwargs['auto_session_renewal'] = False
             return self._make_request(*args, **kwargs)
-        elif network_response.status_code == 202 or network_response.status_code == 429:
+        elif ((network_response.status_code == 202 or network_response.status_code == 429) or network_response.status_code >= 500) and attempt_number < 2:
+            network_response.content
             return self._network_layer.retry_after(
-                float(network_response.headers['Retry-After']),
-                self._make_request,
-                *args,
-                **kwargs
-            )
-        elif network_response.status_code >= 500 and attempt_number < 10:
-            return self._network_layer.retry_after(
-                2 ** attempt_number,
+                float(network_response.headers.get('Retry-After', (2 ** attempt_number))),
                 self._make_request,
                 *args,
                 attempt_number=attempt_number + 1,
@@ -495,6 +490,7 @@ class BoxSession(object):
         response = self._prepare_and_send_request('OPTIONS', url, **kwargs)
         return BoxResponse(response)
 
+    @api_call
     def request(self, method, url, **kwargs):
         """Make a request to the Box API.
 

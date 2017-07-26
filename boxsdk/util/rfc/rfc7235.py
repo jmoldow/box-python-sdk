@@ -20,7 +20,11 @@ import re
 from .rfc7230 import BAD_WHITESPACE_PATTERN, TOKEN_PATTERN, DOUBLE_QUOTED_STRING_START_CHARACTER
 
 
-__all__ = list(map(str, ['AUTH_SCHEME_PATTERN', 'AUTH_PARAM_START_PATTERN', 'TOKEN68_PATTERN', 'AUTH_CHALLENGE_START_PATTERN']))
+__all__ = list(map(str, [
+    'AUTH_SCHEME_PATTERN', 'AUTH_PARAM_NAME_PATTERN',
+    'AUTH_PARAM_VALUE_START_PATTERN', 'AUTH_PARAM_START_PATTERN',
+    'TOKEN68_PATTERN', 'AUTH_CHALLENGE_START_PATTERN',
+]))
 
 
 # 1*SP
@@ -32,20 +36,22 @@ _PATTERN_OF_ONE_OR_MORE_SPACE_CHARACTERS = re.compile(r"[ ]+")
 #########################################################
 
 # auth-scheme
-AUTH_SCHEME_PATTERN = TOKEN_PATTERN
+AUTH_SCHEME_PATTERN = re.compile(r"(?P<auth_scheme>{TOKEN_PATTERN.pattern})".format(**locals()))
 
-_AUTH_PARAM_NAME_PATTERN = TOKEN_PATTERN
+AUTH_PARAM_NAME_PATTERN = re.compile(r"(?P<auth_param_name>{TOKEN_PATTERN.pattern})".format(**locals()))
 
 # ( token / quoted-string ) start pattern
-_AUTH_PARAM_VALUE_START_PATTERN = re.compile(r"(?:{TOKEN_PATTERN.pattern})|{DOUBLE_QUOTED_STRING_START_CHARACTER}".format(**locals()))
+AUTH_PARAM_VALUE_START_PATTERN = re.compile(
+    r"(?P<auth_param_value_start>(?:{TOKEN_PATTERN.pattern})|{DOUBLE_QUOTED_STRING_START_CHARACTER})".format(**locals())
+)
 
 # auth-param start pattern
 AUTH_PARAM_START_PATTERN = re.compile(
-    r"{_AUTH_PARAM_NAME_PATTERN.pattern}"
+    r"{AUTH_PARAM_NAME_PATTERN.pattern}"
     r"{BAD_WHITESPACE_PATTERN.pattern}"
     r"[=]"
     r"{BAD_WHITESPACE_PATTERN.pattern}"
-    r"{_AUTH_PARAM_VALUE_START_PATTERN.pattern}"
+    r"{AUTH_PARAM_VALUE_START_PATTERN.pattern}"
     .format(**locals())
 )
 
@@ -53,28 +59,39 @@ AUTH_PARAM_START_PATTERN = re.compile(
 TOKEN68_PATTERN = re.compile(r"[a-zA-Z0-9\-._~+/]+[=]*")
 
 # [ 1*SP ( token68 / #auth-param ) ] start pattern
-_AUTH_SCHEME_ADDITIONAL_INFORMATION_START_PATTERN = re.compile(
-    r"(?:{TOKEN68_PATTERN.pattern})|(?:{AUTH_PARAM_START_PATTERN.pattern})".format(**locals())
+AUTH_SCHEME_ADDITIONAL_INFORMATION_START_PATTERN = re.compile(
+    r"(?:(?P<auth_param_start>{AUTH_PARAM_START_PATTERN.pattern})|(?P<token68>{TOKEN68_PATTERN.pattern}))".format(**locals())
 )
 
 # challenge start pattern
 AUTH_CHALLENGE_START_PATTERN = re.compile(
     r"{AUTH_SCHEME_PATTERN.pattern}"
-    r"(?:{_PATTERN_OF_ONE_OR_MORE_SPACE_CHARACTERS.pattern}{_AUTH_SCHEME_ADDITIONAL_INFORMATION_START_PATTERN.pattern})?"
+    r"(?:{_PATTERN_OF_ONE_OR_MORE_SPACE_CHARACTERS.pattern}{AUTH_SCHEME_ADDITIONAL_INFORMATION_START_PATTERN.pattern})?"
+    .format(**locals())
+)
+
+
+JMOLDOW_AUTH_CHALLENGE_START_PATTERN = re.compile(
+    r"(?P<auth_scheme>{AUTH_SCHEME_PATTERN.pattern})"
+    r"(?:"
+    r"(?:(?P<spaces>{_PATTERN_OF_ONE_OR_MORE_SPACE_CHARACTERS.pattern})(?P<auth_scheme_additional_information_start>{AUTH_SCHEME_ADDITIONAL_INFORMATION_START_PATTERN.pattern}))"
+    r"|"
+    r"$"
+    r")"
     .format(**locals())
 )
 
 
 
+import requests.utils
 
-
-
-
-"""
 s = 'Newauth realm = "apps", type = 1,  \n\t  title = "Login to \\\"apps\\\"", foo="bar", Basic realm="simple", foo="baz", Fooauth1, Fooauth2, Fooauth3 token68, Fooauth4 token68, Fooauth5'
 for x in requests.utils.parse_list_header(s):
     print(x)
-    print(challenge_start.match(x))
-    print(auth_param_start.match(x))
+    print(AUTH_CHALLENGE_START_PATTERN.match(x))
+    match = JMOLDOW_AUTH_CHALLENGE_START_PATTERN.match(x)
+    print(match)
+    if match:
+        print(match.group('auth_scheme', 'spaces', 'auth_scheme_additional_information_start', 'auth_param_start', 'token68'))
+    print(AUTH_PARAM_START_PATTERN.match(x))
     print()
-"""
