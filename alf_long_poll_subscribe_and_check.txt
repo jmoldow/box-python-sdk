@@ -1,0 +1,9 @@
+At time event is written, tells realtime.
+stream_position encoded into url. Will immediately return new_change if there are new events after stream position.
+check endpoint?
+
+/subscribe with stream position, only checks the stream position and starts the TCP session
+TCP socket is still open even though we've received a response
+
+channel identifies user
+/subscribe should always pass current stream position
