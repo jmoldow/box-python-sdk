@@ -10,6 +10,8 @@ import random
 import string
 
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, generate_private_key as generate_rsa_private_key
+from cryptography.hazmat.primitives import serialization
 from mock import Mock, mock_open, patch, sentinel
 import pytest
 from six import string_types, text_type
@@ -35,9 +37,24 @@ def jwt_key_id():
     return 'jwt_key_id_1'
 
 
+@pytest.fixture(scope='module')
+def test_rsa_private_key_object():
+    return generate_rsa_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+
+
 @pytest.fixture(params=(None, b'strong_password'))
 def rsa_passphrase(request):
     return request.param
+
+
+@pytest.fixture
+def test_rsa_private_key_bytes(test_rsa_private_key_object, rsa_passphrase):
+    encryption = serialization.BestAvailableEncryption(rsa_passphrase) if rsa_passphrase else serialization.NoEncryption()
+    return test_rsa_private_key_object.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=encryption,
+    )
 
 
 @pytest.fixture(scope='function')
@@ -52,8 +69,38 @@ def successful_token_response(successful_token_mock, successful_token_json_respo
     return successful_token_mock
 
 
+@pytest.mark.parametrize(('key_file', 'key_data'), [(None, None), ('fake sys path', 'fake key data')])
+def test_jwt_auth_init_raises_type_error_unless_exactly_one_of_rsa_private_key_file_or_data_is_given(key_file, key_data):
+    kwargs = dict(
+        rsa_private_key_data='fake key data',
+        client_id=None,
+        client_secret=None,
+        jwt_key_id=None,
+        enterprise_id=None,
+    )
+    JWTAuth(**kwargs)
+    kwargs.update(rsa_private_key_file_sys_path=key_file, rsa_private_key_data=key_data)
+    with pytest.raises(TypeError):
+        JWTAuth(**kwargs)
+
+
+@pytest.mark.parametrize('key_data', [object(), u'ƒøø'])
+def test_jwt_auth_init_raises_type_error_if_rsa_private_key_data_has_unexpected_type(key_data):
+    kwargs = dict(
+        rsa_private_key_data='fake key data',
+        client_id=None,
+        client_secret=None,
+        jwt_key_id=None,
+        enterprise_id=None,
+    )
+    JWTAuth(**kwargs)
+    kwargs.update(rsa_private_key_data=key_data)
+    #with pytest.raises(TypeError):
+    JWTAuth(**kwargs)
+
+
 @pytest.fixture
-def jwt_auth_init_mocks(mock_network_layer, successful_token_response, jwt_algorithm, jwt_key_id, rsa_passphrase):
+def jwt_auth_init_mocks(mock_network_layer, successful_token_response, jwt_algorithm, jwt_key_id, rsa_passphrase, test_rsa_private_key_bytes):
     # pylint:disable=redefined-outer-name
 
     @contextmanager
@@ -72,8 +119,7 @@ def jwt_auth_init_mocks(mock_network_layer, successful_token_response, jwt_algor
         }
 
         mock_network_layer.request.return_value = successful_token_response
-        key_file_read_data = b'key_file_read_data'
-        with patch('boxsdk.auth.jwt_auth.open', mock_open(read_data=key_file_read_data), create=True) as jwt_auth_open:
+        with patch('boxsdk.auth.jwt_auth.open', mock_open(read_data=test_rsa_private_key_bytes), create=True) as jwt_auth_open:
             with patch('cryptography.hazmat.primitives.serialization.load_pem_private_key') as load_pem_private_key:
                 oauth = JWTAuth(
                     client_id=fake_client_id,

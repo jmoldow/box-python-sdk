@@ -3,17 +3,19 @@
 from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime, timedelta
-import random
-import string
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 import jwt
-from six import string_types, text_type
+from six import binary_type, string_types, raise_from, text_type
 
 from .oauth2 import OAuth2
 from ..object.user import User
 from ..util.compat import total_seconds
+
+
+NoneType = type(None)
 
 
 class JWTAuth(OAuth2):
@@ -28,7 +30,7 @@ class JWTAuth(OAuth2):
             client_secret,
             enterprise_id,
             jwt_key_id,
-            rsa_private_key_file_sys_path,
+            rsa_private_key_file_sys_path=None,
             rsa_private_key_passphrase=None,
             user=None,
             store_tokens=None,
@@ -37,6 +39,7 @@ class JWTAuth(OAuth2):
             access_token=None,
             network_layer=None,
             jwt_algorithm='RS256',
+            rsa_private_key_data=None,
     ):
         """Extends baseclass method.
 
@@ -122,6 +125,13 @@ class JWTAuth(OAuth2):
             `unicode`
         """
         user_id = self._normalize_user_id(user)
+        rsa_private_key = self._normalize_rsa_private_key(
+            file_sys_path=rsa_private_key_file_sys_path,
+            data=rsa_private_key_data,
+            passphrase=rsa_private_key_passphrase,
+        )
+        del rsa_private_key_data
+        del rsa_private_key_file_sys_path
         super(JWTAuth, self).__init__(
             client_id,
             client_secret,
@@ -132,12 +142,7 @@ class JWTAuth(OAuth2):
             refresh_token=None,
             network_layer=network_layer,
         )
-        with open(rsa_private_key_file_sys_path, 'rb') as key_file:
-            self._rsa_private_key = serialization.load_pem_private_key(
-                key_file.read(),
-                password=rsa_private_key_passphrase,
-                backend=default_backend(),
-            )
+        self._rsa_private_key = rsa_private_key
         self._enterprise_id = enterprise_id
         self._jwt_algorithm = jwt_algorithm
         self._jwt_key_id = jwt_key_id
@@ -161,11 +166,6 @@ class JWTAuth(OAuth2):
         :rtype:
             `unicode`
         """
-        system_random = random.SystemRandom()
-        jti_length = system_random.randint(16, 128)
-        ascii_alphabet = string.ascii_letters + string.digits
-        ascii_len = len(ascii_alphabet)
-        jti = ''.join(ascii_alphabet[int(system_random.random() * ascii_len)] for _ in range(jti_length))
         now_plus_30 = datetime.utcnow() + timedelta(seconds=30)
         assertion = jwt.encode(
             {
@@ -295,3 +295,54 @@ class JWTAuth(OAuth2):
         else:
             new_access_token = self.authenticate_user()
         return new_access_token, None
+
+    @classmethod
+    def _normalize_rsa_private_key(cls, file_sys_path, data, passphrase=None):
+        if len(list(filter(None, [file_sys_path, data]))) != 1:
+            raise TypeError("must pass exactly one of either rsa_private_key_file_sys_path or rsa_private_key_data")
+        if file_sys_path:
+            with open(file_sys_path, 'rb') as key_file:
+                data = key_file.read()
+        if hasattr(data, 'read') and callable(data.read):
+            data = data.read()
+        if isinstance(data, text_type):
+            try:
+                data = data.encode('ascii')
+            except UnicodeError:
+                raise_from(
+                    TypeError("rsa_private_key_data must contain binary data (bytes/str), not a text/unicode string"),
+                    None,
+                )
+        if isinstance(data, binary_type):
+            passphrase = cls._normalize_rsa_private_key_passphrase(passphrase)
+            return serialization.load_pem_private_key(
+                data,
+                password=passphrase,
+                backend=default_backend(),
+            )
+        if isinstance(data, RSAPrivateKey):
+            return data
+        raise TypeError(
+            'rsa_private_key_data must be binary data (bytes/str), '
+            'a file-like object with a read() method, '
+            'or an instance of RSAPrivateKey, '
+            'but got {!r}'
+            .format(data.__class__.__name__)
+        )
+
+    @staticmethod
+    def _normalize_rsa_private_key_passphrase(passphrase):
+        if isinstance(passphrase, text_type):
+            try:
+                return passphrase.encode('ascii')
+            except UnicodeError:
+                raise_from(
+                    TypeError("rsa_private_key_passphrase must contain binary data (bytes/str), not a text/unicode string"),
+                    None,
+                )
+        if not isinstance(passphrase, (binary_type, NoneType)):
+            raise TypeError(
+                "rsa_private_key_passphrase must contain binary data (bytes/str), got {!r}"
+                .format(passphrase.__class__.__name__)
+            )
+        return passphrase
