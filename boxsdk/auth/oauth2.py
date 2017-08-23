@@ -11,6 +11,7 @@ from six.moves.urllib.parse import urlencode, urlunsplit  # pylint:disable=impor
 from boxsdk.network.default_network import DefaultNetwork
 from boxsdk.config import API
 from boxsdk.exception import BoxOAuthException
+from boxsdk.util.secret import Secret
 
 
 class OAuth2(object):
@@ -69,14 +70,16 @@ class OAuth2(object):
             Context Manager
         """
         self._client_id = client_id
-        self._client_secret = client_secret
+        self._client_secret = Secret.new('client_secret', client_secret)
         self._store_tokens_callback = store_tokens
-        self._access_token = access_token
-        self._refresh_token = refresh_token
+        self.__access_token = None
+        self.__refresh_token = None
         self._network_layer = network_layer if network_layer else DefaultNetwork()
         self._refresh_lock = refresh_lock or Lock()
         self._box_device_id = box_device_id
         self._box_device_name = box_device_name
+        self.access_token = access_token
+        self._refresh_token = refresh_token
 
     @property
     def access_token(self):
@@ -88,7 +91,19 @@ class OAuth2(object):
         :rtype:
             `unicode`
         """
-        return self._access_token
+        return self.__access_token
+
+    @access_token.setter
+    def access_token(self, value):
+        self.__access_token = Secret.new('access_token', value)
+
+    @property
+    def _refresh_token(self):
+        return self.__refresh_token
+
+    @_refresh_token.setter
+    def _refresh_token(self, value):
+        self.__refresh_token = Secret.new('refresh_token', value)
 
     def get_authorization_url(self, redirect_url):
         """
@@ -141,7 +156,7 @@ class OAuth2(object):
             'grant_type': 'authorization_code',
             'code': auth_code,
             'client_id': self._client_id,
-            'client_secret': self._client_secret,
+            'client_secret': self._client_secret.data,
         }
         if self._box_device_id:
             data['box_device_id'] = self._box_device_id
@@ -154,7 +169,7 @@ class OAuth2(object):
             'grant_type': 'refresh_token',
             'refresh_token': self._refresh_token,
             'client_id': self._client_id,
-            'client_secret': self._client_secret,
+            'client_secret': self._client_secret.data,
         }
         if self._box_device_id:
             data['box_device_id'] = self._box_device_id
@@ -179,7 +194,7 @@ class OAuth2(object):
         :rtype:
             `tuple` of ((`unicode` or `None`), (`unicode` or `None`))
         """
-        return self._access_token, self._refresh_token
+        return self.access_token, self._refresh_token
 
     def refresh(self, access_token_to_refresh):
         """
@@ -207,7 +222,7 @@ class OAuth2(object):
                 # be refreshed, or if we don't currently have any active access
                 # token, we make the request to refresh the token.
                 access_token, refresh_token = self._refresh(access_token_to_refresh)
-            # Else, if the active access token (self._access_token) is not the same as the token needs to be refreshed,
+            # Else, if the active access token (self.access_token) is not the same as the token needs to be refreshed,
             # it means the expired token has already been refreshed. Simply return the current active tokens.
             return access_token, refresh_token
 
@@ -256,7 +271,7 @@ class OAuth2(object):
         :type refresh_token:
             `unicode` or `None`
         """
-        self._access_token, self._refresh_token = access_token, refresh_token
+        self.access_token, self._refresh_token = access_token, refresh_token
 
     def send_token_request(self, data, access_token, expect_refresh_token=True):
         """
@@ -295,7 +310,7 @@ class OAuth2(object):
         except (ValueError, KeyError):
             raise BoxOAuthException(network_response.status_code, network_response.content, url, 'POST')
         self._store_tokens(access_token, refresh_token)
-        return self._access_token, self._refresh_token
+        return self.access_token, self._refresh_token
 
     def revoke(self):
         """
@@ -312,7 +327,7 @@ class OAuth2(object):
                 url,
                 data={
                     'client_id': self._client_id,
-                    'client_secret': self._client_secret,
+                    'client_secret': self._client_secret.data,
                     'token': token_to_revoke,
                 },
                 access_token=access_token,
