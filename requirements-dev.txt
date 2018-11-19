@@ -2,6 +2,7 @@
 bottle
 jsonpatch
 mock>=2.0.0
+modulegraph>=0.12.1
 pep8
 pylint
 pytest>=2.8.3
